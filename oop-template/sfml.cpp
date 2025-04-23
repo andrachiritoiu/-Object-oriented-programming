@@ -1,38 +1,51 @@
+#include <iostream>
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include "Player.h"
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1400, 800), "Game");
-    window.setFramerateLimit(60); //fps - cadre pe secundă
+    window.setFramerateLimit(60);
 
-    // Fundal
+    // Fundal scalat și repetabil
     sf::Texture bgTexture;
-    bgTexture.loadFromFile("fundal1.jpg"); 
-    sf::Sprite bg1(bgTexture);
-    sf::Sprite bg2(bgTexture);
+    if (!bgTexture.loadFromFile("fundal1.png")) {
+        std::cerr << "Error\n";
+        return -1;
+    }
+    bgTexture.setRepeated(true);
 
-    // Setăm pozițiile inițiale ale fundalurilor
-    bg1.setPosition(0, 0);
-    bg2.setPosition(bgTexture.getSize().x, 0);  
+    // Dimensiuni imagine + scalare
+    sf::Vector2u textureSize = bgTexture.getSize();
+    float scaleX = (float)window.getSize().x / textureSize.x;
+    float scaleY = (float)window.getSize().y / textureSize.y;
+    float scaleFinal = std::min(scaleX, scaleY); // imaginea întreagă
 
-    // Scalarea fundalului pentru a umple toata ferestra 
-    float scaleX = window.getSize().x / (float)bgTexture.getSize().x;
-    float scaleY = window.getSize().y / (float)bgTexture.getSize().y;
+    sf::Vector2f scaledSize(textureSize.x * scaleFinal, textureSize.y * scaleFinal);
+    sf::RectangleShape background(scaledSize);
+    background.setTexture(&bgTexture);
+    background.setTextureRect(sf::IntRect(0, 0, textureSize.x, textureSize.y));
+    background.setPosition(
+        (window.getSize().x - scaledSize.x) / 2.f,
+        (window.getSize().y - scaledSize.y) / 2.f
+    );
 
-    bg1.setScale(scaleX, scaleY);
-    bg2.setScale(scaleX, scaleY);
+    float bgOffset = 0.f;
 
     // Patrate
     std::vector<sf::RectangleShape> patratele;
-    float patratSize = 60.f; //.f=float
+    float patratSize = 60.f;
     float timpIntrePatrate = 2.0f;
     float timer = 0.0f;
     sf::Clock clock;
 
+    // Creare player
+    Player player("player.jpg", 100.f, 600.f, 200, "Player1", false, 100.f);
+    player.getSkin().setScale(1.f, 1.f);
+
     while (window.isOpen())
     {
-        //dt =cat timp a trecut de la ultimul frame
         float dt = clock.restart().asSeconds();
         timer += dt;
 
@@ -42,30 +55,27 @@ int main()
                 window.close();
 
         // Scroll fundal
-        bg1.move(-200 * dt, 0);
-        bg2.move(-200 * dt, 0);
+        bgOffset += 200 * dt;
+        if (bgOffset >= textureSize.x)
+            bgOffset -= textureSize.x;
 
-        // Repozitionare fundal 
-        if (bg1.getPosition().x + bgTexture.getSize().x < 0) //calculeaza pozitia capatului din dreapta a imaginii si verifica daca a trecut complet de marginea din stanga
-            bg1.setPosition(bg2.getPosition().x + bgTexture.getSize().x, 0);
-        if (bg2.getPosition().x + bgTexture.getSize().x < 0)
-            bg2.setPosition(bg1.getPosition().x + bgTexture.getSize().x, 0);
+        // Actualizează dreptunghiul texturii (pentru scroll)
+        background.setTextureRect(sf::IntRect(bgOffset, 0, textureSize.x, textureSize.y));
 
         // Generare patrate
         if (timer >= timpIntrePatrate)
         {
             timer = 0.f;
+
             sf::RectangleShape umbra(sf::Vector2f(patratSize, patratSize));
-            umbra.setFillColor(sf::Color(30, 30, 30, 150)); // culoare închisă, semi-transparentă
-            umbra.setPosition(window.getSize().x + 4, window.getSize().y - patratSize - 220 + 4);
+            umbra.setFillColor(sf::Color(30, 30, 30, 150));
+            umbra.setPosition(window.getSize().x + 4, window.getSize().y - patratSize - 80 + 4);
 
             sf::RectangleShape patrat(sf::Vector2f(patratSize, patratSize));
-            patrat.setFillColor(sf::Color(64, 64, 80)); 
+            patrat.setFillColor(sf::Color(64, 64, 80));
+            patrat.setPosition(window.getSize().x, window.getSize().y - patratSize - 80);
 
-            // Ridicăm patratele mai sus de marginea de jos
-            patrat.setPosition(window.getSize().x, window.getSize().y - patratSize - 220); //-220 este distanta de la marginea de jos a ferestrei
-
-            patratele.push_back(umbra);  // umbra se desenează prima
+            patratele.push_back(umbra);
             patratele.push_back(patrat);
         }
 
@@ -73,17 +83,30 @@ int main()
         for (auto& p : patratele)
             p.move(-200 * dt, 0);
 
-        // Ștergem patratele care ies din ecran
+        // Sterge patratele ieșite din ecran
         patratele.erase(std::remove_if(patratele.begin(), patratele.end(),
-            [](const sf::RectangleShape& p) { return p.getPosition().x + p.getSize().x < 0; }),
+            [](const sf::RectangleShape& p) {
+                return p.getPosition().x + p.getSize().x < 0;
+            }),
             patratele.end());
 
-        window.clear();
-        window.draw(bg1);
-        window.draw(bg2);
+        // Control jucător
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+            player.move(-player.getSpeed() * dt, 0);
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+            player.move(player.getSpeed() * dt, 0);
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+            player.jump(player.getJumpHeight());
+        }
 
+        // Render
+        window.clear();
+        window.draw(background);
         for (auto& p : patratele)
             window.draw(p);
+        player.draw(window); 
 
         window.display();
     }

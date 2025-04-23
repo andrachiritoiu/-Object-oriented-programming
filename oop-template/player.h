@@ -10,7 +10,7 @@ class Player{
         float x, y;
         int speed;
         std::string name; 
-        bool isJumping;
+        bool isJumping=false;
         float jumpHeight;
 
     public:
@@ -20,20 +20,35 @@ class Player{
 
     //copy constructor
     Player(const Player &p);
+
     //operator 
+    //& - referinta catre obiectul curent *this
     Player& operator=(const Player &p);
+
     //getters
+    //const - nu modifica obiectul curent
     int getX() const;
     int getY() const;
     int getSpeed() const;
     const std::string& getName() const;
-    const sf::Texture& getTexture() const;
-    const sf::Sprite& getSprite() const;
+    bool getIsJumping() const;
+    float getJumpHeight() const;
+    sf::Sprite& getSkin() ;
+
     //setters
+    void setTexture(const std::string &texturePath);
     void setX(int x);
     void setY(int y);
     void setSpeed(int speed);
+    void setName(const std::string &name);
+    void setIsJumping(bool isJumping);
+    void setJumpHeight(float jumpHeight);
+
     //methods
+    void move(float dx, float dy); 
+    void jump(float height); 
+    void draw(sf::RenderWindow &window); 
+
 
     //destructor
     ~Player()=default;

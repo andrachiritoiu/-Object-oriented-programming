@@ -36,7 +36,7 @@ int main() {
     std::cout << "Am citit de la tastatură " << nr << " elemente:\n";
     for(int i = 0; i < nr; ++i) {
         std::cout << "- " << v[i] << "\n";
-    }
+
     ///////////////////////////////////////////////////////////////////////////
     /// Pentru date citite din fișier, NU folosiți tastatura.txt. Creați-vă voi
     /// alt fișier propriu cu ce alt nume doriți.
@@ -44,5 +44,20 @@ int main() {
     /// std::ifstream fis("date.txt");
     /// for(int i = 0; i < nr2; ++i)
     ///     fis >> v2[i];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     return 0;
 }
