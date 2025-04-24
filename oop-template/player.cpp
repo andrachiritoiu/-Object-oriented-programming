@@ -1,4 +1,4 @@
-#include "Player.h"
+#include "player.h"
 
 
 //constructor
@@ -106,7 +106,7 @@ void Player::setJumpHeight(float jumpHeight){
 
 //methods
 void Player::move(float dx, float dy) {
-    x += dx*speed;
+    x += dx;
     y += dy;
     skin.setPosition(x, y);
 }
