@@ -1,7 +1,13 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <vector>
-#include "Player.h"
+#include "player.h"
+#include "obstacles.h"
+#include "car.h"
+#include "building.h"
+#include "garbage.h"
+
+int Obstacles::count = 0; // static
 
 int main()
 {
@@ -10,101 +16,106 @@ int main()
 
     // Fundal repetabil
     sf::Texture bgTexture;
-    if (!bgTexture.loadFromFile("fundal.jpg")) {
-        std::cerr << "Error\n";
+    if (!bgTexture.loadFromFile("fundal2.png")) {
+        std::cerr << "Error loading background\n";
         return -1;
     }
     bgTexture.setRepeated(true);
 
     // Dimensiuni imagine
     sf::Vector2u textureSize = bgTexture.getSize();
-    float scaleX = (float)window.getSize().x / textureSize.x; //textureSize.x -latimea imaginii de fundal
-    float scaleY = (float)window.getSize().y / textureSize.y;
-    float scaleFinal = std::min(scaleX, scaleY); 
+    float scaleX = static_cast<float>(window.getSize().x) / textureSize.x;
+    float scaleY = static_cast<float>(window.getSize().y) / textureSize.y;
+    float scaleFinal = std::min(scaleX, scaleY);
 
-    sf::Vector2f scaledSize(textureSize.x * scaleFinal, textureSize.y * scaleFinal); //dimensiunile imaginii de fundal dupa scalare
-
+    sf::Vector2f scaledSize(textureSize.x * scaleFinal, textureSize.y * scaleFinal);
     sf::RectangleShape background(scaledSize);
     background.setTexture(&bgTexture);
-
     background.setTextureRect(sf::IntRect(0, 0, textureSize.x, textureSize.y));
-    
-    //cat de mult se muta fundalul pe axa x
+
     float bgOffset = 0.f;
 
-    // Patrate
-    std::vector<sf::RectangleShape> patratele;
-    float patratSize = 60.f;
-    float timpIntrePatrate = 2.0f;
+    // Obstacole
+    std::vector<Obstacles*> obstacole;
+    float timpIntreObstacole = 2.5f;
     float timer = 0.0f;
     sf::Clock clock;
+    srand(static_cast<unsigned>(time(nullptr)));
 
-    // Creare player
-    Player player("playergirl.png", 100.f, 380.f, 10, "Player1", 50.f, 0.f, 4.f);
+    // Player
+    Player player("playerboy.png", 100.f, 380.f, 10, "Player1", 50.f, 0.f, 4.f);
     player.getSkin().setScale(0.5f, 0.5f);
 
     while (window.isOpen())
     {
         float dt = clock.restart().asSeconds();
-        timer += dt; //pt timpul intre patrate
+        timer += dt;
 
         sf::Event event;
         while (window.pollEvent(event))
+        {
             if (event.type == sf::Event::Closed)
                 window.close();
+        }
 
-        // Scroll fundal - se deplaseaza cu 150 de pixeli pe secunda
+        // Scroll fundal
         bgOffset += 150 * dt;
         if (bgOffset >= textureSize.x)
             bgOffset -= textureSize.x;
+        background.setTextureRect(sf::IntRect(static_cast<int>(bgOffset), 0, textureSize.x, textureSize.y));
 
-        // Actualizează dreptunghiul texturii (pentru scroll)
-        background.setTextureRect(sf::IntRect(bgOffset, 0, textureSize.x, textureSize.y));
-
-        // Generare patrate
-        if (timer >= timpIntrePatrate)
+        // Generare obstacole
+        if (timer >= timpIntreObstacole)
         {
             timer = 0.f;
+            int random = rand() % 3;
+            Obstacles* obstacol = nullptr;
 
-            sf::RectangleShape umbra(sf::Vector2f(patratSize, patratSize));
-            umbra.setFillColor(sf::Color(30, 30, 30, 150));
-            umbra.setPosition(window.getSize().x + 4, window.getSize().y - patratSize - 100 + 4);
+            float xStart = window.getSize().x;
+            float yPos = window.getSize().y - 240.f;
 
-            sf::RectangleShape patrat(sf::Vector2f(patratSize, patratSize));
-            patrat.setFillColor(sf::Color(64, 64, 80));
-            patrat.setPosition(window.getSize().x, window.getSize().y - patratSize - 100);
-
-            patratele.push_back(umbra);
-            patratele.push_back(patrat);
-        }
-
-        // Muta patratele spre stânga
-        for (auto& p : patratele)
-            p.move(-200 * dt, 0);
-
-        // Sterge patratele ieșite din ecran
-        for (size_t i = 0; i < patratele.size();)
-        {
-         if (patratele[i].getPosition().x + patratele[i].getSize().x < 0)
+            switch (random)
             {
-            patratele.erase(patratele.begin() + i); 
+                case 0: obstacol = new Car(xStart, yPos); break;
+                case 1: obstacol = new Building(xStart, yPos); break;
+                case 2: obstacol = new Garbage(xStart, yPos); break;
             }
-        else i++; 
+
+            if (obstacol)
+                obstacole.push_back(obstacol);
         }
 
-        // Control jucător
+        // Update obstacole (mișcare)
+        for (auto& obstacol : obstacole)
+            obstacol->update();
+
+        // Șterge obstacolele ieșite din ecran
+        for (size_t i = 0; i < obstacole.size(); )
+        {
+            if (obstacole[i]->getX() + 100.f < 0)
+            {
+                delete obstacole[i];
+                obstacole.erase(obstacole.begin() + i);
+            }
+            else ++i;
+        }
+
+        // Player logic
         player.handleInput(window);
-        player.update(); 
+        player.update();
 
         // Render
         window.clear();
         window.draw(background);
-        for (auto& p : patratele)
-            window.draw(p);
-        player.draw(window); 
-
+        for (auto& obstacol : obstacole)
+            obstacol->draw(window);
+        player.draw(window);
         window.display();
     }
+
+    // Cleanup
+    for (auto& obstacol : obstacole)
+        delete obstacol;
 
     return 0;
 }
