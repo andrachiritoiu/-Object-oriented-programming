@@ -2,13 +2,15 @@
 
 
 //constructor
-Player::Player(const std::string& texturePath, float x, float y, int speed, const std::string &name, bool isJumping, float jumpHeight)  {
+Player::Player(const std::string& texturePath, float x, float y, int speed, const std::string& name, float jumpHeight, float velocityY, float gravity) {
         this->x=x;
         this->y=y;
         this->speed=speed;
         this->name=name;
-        this->isJumping=isJumping;
+        this->isJumping=false;
         this->jumpHeight=jumpHeight;
+        this->velocityY=velocityY;
+        this->gravity=gravity;
     if (!texture.loadFromFile(texturePath)) {
         throw std::runtime_error("Failed to load texture from " + texturePath);
     }
@@ -24,8 +26,12 @@ Player::Player(const Player &p){
     this->name=p.name;
     this->isJumping=p.isJumping;
     this->jumpHeight=p.jumpHeight;
+    this->velocityY=p.velocityY;
+    this->gravity=p.gravity;
+
     this->texture=p.texture;
-    this->skin=p.skin;
+    this->skin.setTexture(this->texture);
+    this->skin.setPosition(p.x, p.y);
 }
 
 //operator
@@ -37,18 +43,22 @@ Player& Player::operator=(const Player &p){
         this->name=p.name;
         this->isJumping=p.isJumping;
         this->jumpHeight=p.jumpHeight;
+        this->velocityY=p.velocityY;
+        this->gravity=p.gravity;
+
         this->texture=p.texture;
-        this->skin=p.skin;
+        this->skin.setTexture(this->texture);  
+        this->skin.setPosition(p.x, p.y); 
     }
     return *this;
 }
   
 //getters
-int Player::getX()const{
+float Player::getX()const{
     return x;
 }
 
-int Player::getY()const{
+float Player::getY()const{
     return y;
 }
 
@@ -105,17 +115,68 @@ void Player::setJumpHeight(float jumpHeight){
 }
 
 //methods
-void Player::move(float dx, float dy) {
+void Player::move(float dx, float dy, const sf::RenderWindow &window) {
     x += dx;
+    //mariginea la dreapta
+    if (x+skin.getGlobalBounds().width > window.getSize().x) { 
+        x = window.getSize().x - skin.getGlobalBounds().width;
+    }
+    //marginea la stanga
+    if (x < 0) { 
+        x = 0;
+    }
+    
     y += dy;
+    if (y+skin.getGlobalBounds().height > window.getSize().y) { 
+        y = window.getSize().y - skin.getGlobalBounds().height;
+    }
+    
+    if (y < 0) { 
+        y= 0;
+    }
     skin.setPosition(x, y);
 }
 
 void Player::jump(float height) {
     if (!isJumping) {
         isJumping = true;
-        y -= height;
+        velocityY = -height;
+    }
+}
+
+void Player::update(){
+    if (isJumping) {
+        velocityY += gravity; 
+        y += velocityY;
+        if (y >= 380.f) { // inaltimea solului
+            y = 380.f;
+            isJumping = false;
+            velocityY = 0; 
+        }
+        x += 50.f * 0.04f; //0.04f este dt-ul, adica timpul scurs intre frame-uri
         skin.setPosition(x, y);
+    }
+
+}
+
+void Player::handleInput(const sf::RenderWindow &window) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+        move(-speed, 0, window); 
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+        move(speed, 0, window); 
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && !isJumping) {
+        jump(jumpHeight); 
+    }
+
+    if (isJumping) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+            move(-speed / 2, 0, window); // Mișcare redusă în timpul săriturii
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+            move(speed / 2, 0, window); // Mișcare redusă în timpul săriturii
+        }
     }
 }
 

@@ -10,13 +10,15 @@ class Player{
         float x, y;
         int speed;
         std::string name; 
-        bool isJumping=false;
+        bool isJumping;
         float jumpHeight;
+        float velocityY; //viteza verticala a jucatorului
+        float gravity; 
 
     public:
     //constructors
     Player()=default;
-    Player(const std::string& texturePath, float x, float y, int speed, const std::string &name, bool isJumping, float jumpHeight);
+    Player(const std::string& texturePath, float x, float y, int speed, const std::string &name, float jumpHeight,float velocityY, float gravity);
 
     //copy constructor
     Player(const Player &p);
@@ -27,8 +29,8 @@ class Player{
 
     //getters
     //const - nu modifica obiectul curent
-    int getX() const;
-    int getY() const;
+    float getX() const;
+    float getY() const;
     int getSpeed() const;
     const std::string& getName() const;
     bool getIsJumping() const;
@@ -45,9 +47,11 @@ class Player{
     void setJumpHeight(float jumpHeight);
 
     //methods
-    void move(float dx, float dy); 
+    void move(float dx, float dy, const sf::RenderWindow &window); 
     void jump(float height); 
-    void draw(sf::RenderWindow &window); 
+    void update(); 
+    void handleInput(const sf::RenderWindow &window);
+    void draw(sf::RenderWindow &window);
 
 
     //destructor

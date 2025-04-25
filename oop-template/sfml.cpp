@@ -40,7 +40,7 @@ int main()
     sf::Clock clock;
 
     // Creare player
-    Player player("playergirl.png", 100.f, 380.f, 50, "Player1", false, 100.f);
+    Player player("playergirl.png", 100.f, 380.f, 10, "Player1", 50.f, 0.f, 4.f);
     player.getSkin().setScale(0.5f, 0.5f);
 
     while (window.isOpen())
@@ -93,15 +93,8 @@ int main()
         }
 
         // Control jucător
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-            player.move(-player.getSpeed() * dt, 0);
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-            player.move(player.getSpeed() * dt, 0);
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-            player.jump(player.getJumpHeight());
-        }
+        player.handleInput(window);
+        player.update(); 
 
         // Render
         window.clear();
