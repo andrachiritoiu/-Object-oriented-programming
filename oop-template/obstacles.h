@@ -32,6 +32,7 @@ class Obstacles {
         virtual void draw(sf::RenderWindow &window)=0; //metoda virtuala pura
         virtual void update()=0;  
         static int getCount();
+        sf::FloatRect getBounds() const; 
 
     //destructor
         virtual ~Obstacles()=default;

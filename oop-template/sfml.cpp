@@ -104,6 +104,16 @@ int main()
         player.handleInput(window);
         player.update();
 
+        for (auto& obstacol : obstacole)
+        {
+            //-> =la pointeri
+            if (player.getBounds().intersects(obstacol->getBounds()))
+            {
+                player.setX(obstacol->getBounds().left); 
+                player.getSkin().setPosition(obstacol->getBounds().left-player.getBounds().width, player.getY());
+            }
+        }
+
         // Render
         window.clear();
         window.draw(background);

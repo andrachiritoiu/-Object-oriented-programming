@@ -65,3 +65,6 @@ int Obstacles::getCount(){
     return count;
 }
 
+sf::FloatRect Obstacles::getBounds()const{
+    return shape.getGlobalBounds();
+}

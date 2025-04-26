@@ -52,7 +52,7 @@ class Player{
     void update(); 
     void handleInput(const sf::RenderWindow &window);
     void draw(sf::RenderWindow &window);
-
+    sf::FloatRect getBounds() const; //FloatRect - dreptunghi care contine coordonatele spriteului
 
     //destructor
     ~Player()=default;

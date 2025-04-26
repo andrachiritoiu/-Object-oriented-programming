@@ -183,3 +183,7 @@ void Player::handleInput(const sf::RenderWindow &window) {
 void Player::draw(sf::RenderWindow &window) {
     window.draw(skin);
 }
+
+sf::FloatRect Player::getBounds() const {
+    return skin.getGlobalBounds();
+}
