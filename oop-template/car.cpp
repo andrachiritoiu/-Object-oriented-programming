@@ -1,7 +1,7 @@
 #include "car.h"
 
 //constructor
-Car::Car(float x, float y) : Obstacles(x, y) {
+Car::Car(float x, float y) : Obstacles(x, y+60.f) {
     setTexture("car1.png");
     shape.setScale(0.08f, 0.08f); 
 }

@@ -104,13 +104,23 @@ int main()
         player.handleInput(window);
         player.update();
 
+        // for (auto& obstacol : obstacole)
+        // {
+        //     //-> =la pointeri
+        //     if (player.getBounds().intersects(obstacol->getBounds()))
+        //     {
+        //         player.setX(obstacol->getBounds().left); 
+        //         player.getSkin().setPosition(player.getX(), player.getY());
+        //     }
+        // }
+
         for (auto& obstacol : obstacole)
         {
             //-> =la pointeri
-            if (player.getBounds().intersects(obstacol->getBounds()))
+            if (player.getBounds().left + player.getBounds().width == obstacol->getBounds().left)
             {
-                player.setX(obstacol->getBounds().left); 
-                player.getSkin().setPosition(obstacol->getBounds().left-player.getBounds().width, player.getY());
+                player.setX(obstacol->getBounds().left - 5.f); 
+                player.getSkin().setPosition(player.getX(), player.getY());
             }
         }
 
