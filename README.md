@@ -1,1 +1,1 @@
-# OOP-JOC
+# OOP  - Object-oriented programming
