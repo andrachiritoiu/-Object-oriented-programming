@@ -19,7 +19,7 @@ class Medicine {
 private:
     std::string name;
     std::string animaltype;
-    int price{}; //{}=seteaza varialbilele la valoarea implicita, adica la 0
+    int price{}; //{}=seteaza varialbilele la valoarea implicita
     int dose{};
 public:
     //constructors
