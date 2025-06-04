@@ -14,7 +14,7 @@ This repository contains fundamental concepts and practical examples of Object-O
   
 This repository contains two main projects implemented using Object-Oriented Programming (OOP) principles:
 
-1. **A simple game built with SFML**
+1. **A simple game built with SFML(oop-template)**
 2. **A pharmacy management system**
 - A console-based application simulating basic pharmacy operations
 - Features:
